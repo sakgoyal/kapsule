@@ -3,12 +3,13 @@
   "version": "1.14.5",
   "description": "A closure based Web Component library",
   "type": "module",
-  "unpkg": "dist/kapsule.min.js",
+  "unpkg": "dist/kapsule.js",
   "main": "dist/kapsule.mjs",
   "module": "dist/kapsule.mjs",
-  "types": "dist/kapsule.d.ts",
+  "types": "dist/index.d.ts",
   "exports": {
-    "umd": "./dist/kapsule.min.js",
+    "types": "./dist/index.d.ts",
+    "umd": "./dist/kapsule.js",
     "default": "./dist/kapsule.mjs"
   },
   "sideEffects": false,
@@ -35,29 +36,25 @@
   },
   "homepage": "https://github.com/vasturiano/kapsule",
   "scripts": {
-    "build": "rimraf dist && rollup -c",
-    "dev": "rollup -w -c",
+    "build": "vite build",
+    "dev": "vite dev",
     "prepare": "npm run build"
   },
   "files": [
     "dist/**/*"
   ],
   "dependencies": {
-    "lodash-es": "4"
+    "lodash-es": "^4"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.2",
-    "@babel/preset-env": "^7.23.2",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
-    "rimraf": "^5.0.5",
-    "rollup": "^4.1.4",
-    "rollup-plugin-dts": "^6.1.0",
-    "typescript": "^5.2.2"
+    "@types/lodash-es": "^4",
+    "@types/node": "^20",
+    "typescript": "^5.5",
+    "vite": "^5.3.4",
+    "vite-plugin-dts": "^4.0.0-beta.1",
+    "vitest": "^2.0.3"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=20"
   }
 }

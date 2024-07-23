@@ -1,10 +1,52 @@
-import debounce from 'lodash-es/debounce.js';
+import debounce from 'lodash-es/debounce';
+
+export interface State {
+  initialised: boolean;
+  _rerender: () => void;
+  [stateItem: string]: any;
+}
+export type InitOptions = Record<string, unknown>;
+export interface PropCfg {
+  default?: any;
+  onChange?(newVal: any, state: State, prevVal: any): void;
+  triggerUpdate?: boolean;
+}
+
+export type MethodCfg = (state: State, ...args: any[]) => any;
+export interface KapsuleCfg {
+  props?: { [prop: string]: PropCfg };
+  methods?: { [method: string]: MethodCfg };
+  aliases?: { [propOrMethod: string]: string };
+  stateInit?: (initOptions?: InitOptions) => Partial<State>;
+  init?: (
+    contructorItem?: any,
+    state?: State,
+    initOptions?: InitOptions
+  ) => void;
+  update: (state?: State, changedProps?: { [prop: string]: any }) => void;
+}
+export type PropGetter = () => any;
+export type PropSetter = (val: any) => KapsuleInstance;
+export type KapsuleMethod = (...args: any[]) => any;
+
+export interface KapsuleInstance {
+  (constructorItem: any): KapsuleInstance;
+  resetProps(): KapsuleInstance;
+  [propOrMethod: string]: PropGetter | PropSetter | KapsuleMethod;
+}
+
+export type KapsuleClosure = (initOptions?: InitOptions) => KapsuleInstance;
 
 class Prop {
+  name : string
+  defaultVal : any
+  triggerUpdate : boolean
+  onChange : (newVal: any, state: State, prevVal: any) => void;
+
   constructor(name, {
     default: defaultVal = null,
     triggerUpdate = true,
-    onChange = (newVal, state) => {}
+    onChange = (newVal: any, state: any) => {}
   }) {
     this.name = name;
     this.defaultVal = defaultVal;
@@ -13,14 +55,14 @@ class Prop {
   }
 }
 
-export default function ({
+export default function Kapsule({
   stateInit = (() => ({})),
   props: rawProps = {},
   methods = {},
   aliases = {},
   init: initFn = (() => {}),
   update: updateFn = (() => {})
-}) {
+} : KapsuleCfg) : KapsuleClosure {
 
   // Parse props into Prop instances
   const props = Object.keys(rawProps).map(propName =>
@@ -30,10 +72,10 @@ export default function ({
   return function(options = {}) {
 
     // Holds component state
-    let state = Object.assign({},
-      stateInit instanceof Function ? stateInit(options) : stateInit, // Support plain objects for backwards compatibility
-      { initialised: false }
-    );
+    let state = {
+      ...(stateInit instanceof Function ? stateInit(options) : stateInit), // Support plain objects for backwards compatibility
+      initialised: false
+    };
 
     // keeps track of which props triggered an update
     let changedProps = {};
