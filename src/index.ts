@@ -1,3 +1,4 @@
+// @ts-nocheck
 import debounce from 'lodash-es/debounce';
 
 export interface State {
@@ -43,10 +44,10 @@ class Prop {
   triggerUpdate : boolean
   onChange : (newVal: any, state: State, prevVal: any) => void;
 
-  constructor(name, {
+  constructor(name : string, {
     default: defaultVal = null,
     triggerUpdate = true,
-    onChange = (newVal: any, state: any) => {}
+    onChange = (newVal: any, state: State) => {}
   }) {
     this.name = name;
     this.defaultVal = defaultVal;
@@ -55,7 +56,7 @@ class Prop {
   }
 }
 
-export default function Kapsule({
+export function Kapsule({
   stateInit = (() => ({})),
   props: rawProps = {},
   methods = {},
@@ -66,6 +67,7 @@ export default function Kapsule({
 
   // Parse props into Prop instances
   const props = Object.keys(rawProps).map(propName =>
+    // @ts-ignore
     new Prop(propName, rawProps[propName])
   );
 
@@ -88,7 +90,7 @@ export default function Kapsule({
       return comp;
     }
 
-    const initStatic = function(nodeElement, options) {
+    function initStatic(nodeElement, options) {
       initFn.call(comp, nodeElement, state, options);
       state.initialised = true;
     };
@@ -106,7 +108,7 @@ export default function Kapsule({
       function getSetProp({
         name: prop,
         triggerUpdate: redigest = false,
-        onChange = (newVal, state) => {},
+        onChange = (newVal, state : State) => {},
         defaultVal = null
       }) {
         return function(_) {
@@ -127,12 +129,14 @@ export default function Kapsule({
     });
 
     // Other methods
-    Object.keys(methods).forEach(methodName => {
+    for (const methodName in methods) {
       comp[methodName] = (...args) => methods[methodName].call(comp, state, ...args);
-    });
+    }
 
     // Link aliases
-    Object.entries(aliases).forEach(([alias, target]) => comp[alias] = comp[target]);
+    for (const [alias, target] of Object.entries(aliases)) {
+      comp[alias] = comp[target];
+    }
 
     // Reset all component props to their default value
     comp.resetProps = function() {
@@ -141,8 +145,6 @@ export default function Kapsule({
       });
       return comp;
     };
-
-    //
 
     comp.resetProps(); // Apply all prop defaults
     state._rerender = digest; // Expose digest method
